@@ -5,7 +5,7 @@
 //  Created by IS 543 on 10/24/24.
 //
 
-import Foundation
+import SwiftUI
 
 @Observable class LanguageViewModel {
     // MARK: - Properties
@@ -18,6 +18,17 @@ import Foundation
     
     var topics: [Language.Topic] {
         lessonPlan.topics
+    }
+    
+    var currentFlashcards: [Language.Term] {
+        if let flashcards = lessonPlan.currentFlashcards {
+            return flashcards
+        }
+        return []
+    }
+    
+    func getSelectedTopicName() -> String? {
+        lessonPlan.selectedTopic?.title
     }
     
     func progress(for title: String) -> Language.Progress {
@@ -34,6 +45,21 @@ import Foundation
     func toggleLessonRead(for title: String) {
         lessonPlan.toggleLessonRead(for: title)
     }
+    
+    func selectTopic(_ topic: Language.Topic) {
+        lessonPlan.selectTopic(topic)
+    }
+    
+    func createFlashCardDeck(_ cards: [Language.Term]) {
+        lessonPlan.makeFlashcards(cards)
+    }
+    
+    func flip(_ flashCard: Language.Term) {
+        withAnimation(.easeIn(duration: 0.05)) {
+            lessonPlan.flipCard(flashCard)
+        }
+    }
+    
     
     // MARK: - Private helpers
 }

@@ -7,14 +7,6 @@
 
 import Foundation
 
-protocol LessonPlan {
-    var languageName: String {get}
-    var topics: [Language.Topic] {get}
-    var progress: [Language.Progress] {get set}
-    
-    mutating func toggleLessonRead(for title: String)
-}
-
 struct Language {
     
     struct Topic: Identifiable {
@@ -25,9 +17,33 @@ struct Language {
         var quiz: [QuizItem]
     }
     
-    struct Term {
+//    struct Flashcard<Term> where Term: Identifiable {
+//        var cards: Array<Term>
+//        
+//        init(cards: Array<Term>) {
+//            self.cards = cards.shuffled()
+//        }
+//        
+//        mutating func flipCard(_ flashcard: Term) {
+//            if let index = cards.firstIndex(where: { $0.id == flashcard.id}) {
+//                cards[index]
+//            }
+//        }
+//    }
+//    
+//    mutating func flipCard(_ flashcard: Term) {
+//        if let index = cards.firstIndex(where: { $0.id == flashcard.id}) {
+//            cards[index].toggleTargetUp()
+//        }
+//    }
+    
+    
+    struct Term: Identifiable {
+        var id = UUID()
         var targetWord: String
+        var pinyin: String
         var translation: String
+        var isTargetUp: Bool = true;
     }
     
 //    enum QuestionType {
@@ -51,6 +67,8 @@ struct Language {
         var quizPassed = false
         var quizHighScore: Int?
     }
+    
+
 }
 
 extension Language.Progress: Identifiable {
@@ -61,14 +79,51 @@ private func key(for title: String, type: String) -> String {
     "\(title).\(type)"
 }
 
+protocol LessonPlan {
+    var selectedTopic: Language.Topic? {get set}
+    var currentFlashcards: [Language.Term]? {get set}
+    var languageName: String {get}
+    var topics: [Language.Topic] {get}
+    var progress: [Language.Progress] {get set}
+    
+    mutating func selectTopic(_ title: Language.Topic)
+    mutating func flipCard(_ term: Language.Term)
+    mutating func toggleLessonRead(for title: String)
+    mutating func makeFlashcards(_ terms: [Language.Term])
+}
+
 struct ChineseLessonPlan: LessonPlan {
     // MARK: -  Properties
+    var selectedTopic: Language.Topic?
+    var currentFlashcards: [Language.Term]?
+//    var selectedTerm: Language.Term?
+    
     let languageName = "Chinese"
     let topics = Data.chineseTopics
     
     var progress: [Language.Progress] = ChineseLessonPlan.readProgressRecords()
     
     // MARK: - Helpers
+    mutating func selectTopic(_ topic: Language.Topic) {
+        selectedTopic = topic
+//        selectedTerm = nil
+    }
+//    mutating func selectTerm(_ term: Language.Term) {
+//        selectedTerm = term
+//    }
+    
+    mutating func flipCard(_ term: Language.Term) {
+        if var flashcards = currentFlashcards, let index = flashcards.firstIndex(where: {$0.id == term.id}) {
+            flashcards[index].isTargetUp.toggle()
+            currentFlashcards = flashcards
+            print("flip", flashcards[index].targetWord)
+        }
+    }
+    
+    mutating func makeFlashcards(_ terms: [Language.Term]) {
+        currentFlashcards = terms.shuffled()
+    }
+    
     mutating func toggleLessonRead(for title: String) {
         if let index = progress.firstIndex(where: {$0.topicTitle == title}) {
             progress[index].lessonRead.toggle()
@@ -111,16 +166,37 @@ struct ChineseLessonPlan: LessonPlan {
             Language.Topic (
                 title: "Basic Greetings",
                 lesonText: """
-                    This is a test
+                    Greetings are an essential part of communication in any culture, and in Chinese, they carry significant social meaning. While basic greetings like "hello" are common in both English and Chinese, the nuances and contexts differ.
+                
+                In English, "Hello" can be used at any time, which isn’t the case in Chinese. Using the correct greeting for the time of day reflects attentiveness and respect. It is common to say good morning and good afternoon when greating people throughout the day.
                 """,
                 vocabulary: [
-                    Language.Term(targetWord: "你好", translation: "Hello")
+                    Language.Term(targetWord: "你好", pinyin: "nǐ hǎo", translation: "Hello"),
+                    Language.Term(targetWord: "早上好", pinyin: "zǎoshang hǎo", translation: "Good morning"),
+                    Language.Term(targetWord: "下午好", pinyin: "xiàwǔ hǎo", translation: "Good afternoon"),
+                    Language.Term(targetWord: "晚上好", pinyin: "wǎnshàng hǎo", translation: "Good evening"),
+                    Language.Term(targetWord: "你好吗?", pinyin: "nǐ hǎo ma?", translation: "How are you?"),
+                    Language.Term(targetWord: "再见", pinyin: "zàijiàn", translation: "Goodbye"),
                 ],
                 quiz: [
                     Language.QuizItem(
                         question: "How would you say 'Hello'?",
                         answers: ["Hello", "你好"],
                         correctAnswer: "你好")
+                ]),
+            Language.Topic (
+                title: "What do you like",
+                lesonText: """
+                    This is a test
+                """,
+                vocabulary: [
+                    Language.Term(targetWord: "喜歡", pinyin: "xihuan", translation: "like"),
+                ],
+                quiz: [
+                    Language.QuizItem(
+                        question: "Which of the following mean 'like'?",
+                        answers: ["你好", "喜歡"],
+                        correctAnswer: "喜歡")
                 ]),
         ]
     }

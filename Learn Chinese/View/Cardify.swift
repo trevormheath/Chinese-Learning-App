@@ -31,14 +31,14 @@ struct Cardify: Animatable, ViewModifier {
                     RoundedRectangle(cornerRadius: cornerRadius(for: geometry.size)).stroke()
                     content
                 } else {
-                    RoundedRectangle(cornerRadius: cornerRadius(for: geometry.size)).fill(.green.opacity(0.3))
+                    RoundedRectangle(cornerRadius: cornerRadius(for: geometry.size)).fill(.softGreen)
                     content.scaleEffect(x: -1, y: 1)
                 }
                 
             }
         }
         .rotation3DEffect(Angle(degrees: rotation), axis: (0, 1, 0))
-        .padding(20)
+        .padding(30)
     }
     
     

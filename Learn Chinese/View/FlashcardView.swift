@@ -12,8 +12,13 @@ struct FlashcardView: View {
     
     @State private var counter = 0
     @State private var isNext: Bool = false
+    @Environment(\.presentationMode) var presentationMode
+    
     var vocab: [Language.Term] {
         languageViewModel.currentFlashcards
+    }
+    var title: String {
+        languageViewModel.currentTopic.title
     }
     
     var body: some View {
@@ -37,8 +42,7 @@ struct FlashcardView: View {
             .onTapGesture {
                 languageViewModel.flip(vocab[counter])
             }
-            .animation(.easeInOut(duration: 1.0), value: vocab[counter].isTargetUp)
-//            .transition(.scale)
+            .animation(.easeInOut(duration: Constants.animationDuration), value: vocab[counter].isTargetUp)
             .transition(counterChangeTransition())
             .id(counter)
             
@@ -53,36 +57,52 @@ struct FlashcardView: View {
                 } label: {
                     Text("Previous")
                 }
-                .padding(10)
-                .background(.yellow)
-                .cornerRadius(10)
+                .padding(Constants.smallPadding)
+                .background(.defaultButton)
+                .cornerRadius(Constants.cornerRadius)
+                .disabled(counter <= 0)
                 
                 Button {
                     withAnimation(.easeInOut) {
                         if counter < vocab.count - 1 {
                             isNext = true
                             counter += 1
+                        } else {
+                            if !languageViewModel.progress(for: title).vocabStudied {
+                                languageViewModel.toggleFlashCardsComplete(for: title)
+                            }
+                            presentationMode.wrappedValue.dismiss()
                         }
                     }
                 } label: {
-                    Text("Next")
+                    if counter < vocab.count - 1 {
+                        Text("Next")
+                    }
+                    else {
+                        Text("Finish")
+                    }
                 }
-                .padding(10)
-                .background(.yellow)
-                .cornerRadius(10)
+                .padding(Constants.smallPadding)
+                .background(.defaultButton)
+                .cornerRadius(Constants.cornerRadius)
             }
-            .padding(50)
+            .padding(Constants.largePadding)
         }
     }
     
     private func counterChangeTransition() -> AnyTransition {
         if (isNext) {
-//            return .move(edge: .trailing)
             return AnyTransition.asymmetric(insertion: .move(edge: .trailing), removal: .scale)
         } else {
-//            return .move(edge: .leading)
             return AnyTransition.asymmetric(insertion: .move(edge: .leading), removal: .scale)
         }
+    }
+    
+    private struct Constants {
+        static let smallPadding: CGFloat = 10
+        static let largePadding: CGFloat = 50
+        static let cornerRadius: CGFloat = 10
+        static let animationDuration: TimeInterval = 0.5
     }
 }
 

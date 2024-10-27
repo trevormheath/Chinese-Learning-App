@@ -14,32 +14,43 @@ struct HomeView: View {
         NavigationStack {
             List(languageViewModel.topics) { topic in
                 VStack(alignment: .leading) {
-                    Text(topic.title)
-                        .font(.headline)
-                    NavigationLink(destination: LessonView(Topic: topic, languageViewModel: languageViewModel)) {
-                        Button(action: {
-                            languageViewModel.selectTopic(topic)
-                            print("selected topic")
-                        }) {
-                            Text("Go to lesson")
-                        }
+                    HStack {
+                        Text(topic.title)
+                            .font(.headline)
                         
+                        Spacer()
+                        
+                        //get lesson progress
+                        let lessonRead = languageViewModel.progress(for: topic.title).lessonRead
+                        let vocabStudied = languageViewModel.progress(for: topic.title).vocabStudied
+                        let quizPassed = languageViewModel.progress(for: topic.title).quizPassed
+                        
+                        if (lessonRead && vocabStudied && quizPassed) {
+                            Text("Complete")
+                        } else if (!lessonRead && !vocabStudied && !quizPassed) {
+                            Text("Not Started")
+                        } else {
+                            let countComplete = (lessonRead ? 1 : 0) + (vocabStudied ? 1 : 0) + (quizPassed ? 1 : 0)
+                            Text("In Progress (\(countComplete)/3)")
+                        }
                     }
-//                    Button {
-//                        languageViewModel.toggleLessonRead(for: topic.title)
-//                    } label: {
-//                        Text("Lesson read: \(languageViewModel.progress(for: topic.title).lessonRead)")
-//                            .font(.subheadline)
-//                    }
+                    NavigationLink(destination: LessonView(Topic: topic, languageViewModel: languageViewModel)) {
+                            Text("Go to lesson")
+                    }
                 }
                 .frame(maxWidth: .infinity)
-                .padding(10)
-                .background(.green.opacity(0.3))
-                .cornerRadius(10)
+                .padding(Constants.smallPadding)
+                .background(.softGreen)
+                .cornerRadius(Constants.cornerRadius)
             }
             .listStyle(.plain)
             .navigationTitle("Learn \(languageViewModel.languageName)")
         }
+    }
+    
+    private struct Constants {
+        static let smallPadding: CGFloat = 10
+        static let cornerRadius: CGFloat = 10
     }
 }
 

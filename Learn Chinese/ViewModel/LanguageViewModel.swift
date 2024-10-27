@@ -27,8 +27,25 @@ import SwiftUI
         return []
     }
     
-    func getSelectedTopicName() -> String? {
-        lessonPlan.selectedTopic?.title
+    var currentQuestions: [Language.QuizItem] {
+        if let questions = lessonPlan.currentQuiz {
+            return questions
+        }
+        return []
+    }
+    var quizBonusTimeRemaining: TimeInterval {
+        lessonPlan.bonusTimeRemaining
+    }
+    var quizBonusTimePercent: Double {
+        lessonPlan.bonusRemainingPercent
+    }
+    
+    var currentTopic: Language.Topic {
+        if let selectedTopic = lessonPlan.selectedTopic {
+            return selectedTopic
+        } else {
+            return Language.Topic(title: "", lessonText: "", vocabulary: [], quiz: [])
+        }
     }
     
     func progress(for title: String) -> Language.Progress {
@@ -45,13 +62,27 @@ import SwiftUI
     func toggleLessonRead(for title: String) {
         lessonPlan.toggleLessonRead(for: title)
     }
+    func toggleQuizComplete(for title: String) {
+        lessonPlan.toggleQuizComplete(for: title)
+    }
+    func toggleFlashCardsComplete(for title: String) {
+        lessonPlan.toggleFlashCardsComplete(for: title)
+    }
+    
+    func saveHighscore(for title: String, with score: Int) {
+        lessonPlan.saveLessonHighscore(for: title, with: score)
+    }
     
     func selectTopic(_ topic: Language.Topic) {
         lessonPlan.selectTopic(topic)
     }
     
-    func createFlashCardDeck(_ cards: [Language.Term]) {
-        lessonPlan.makeFlashcards(cards)
+    func createFlashCardDeck(_ vocab: [Language.Term]) {
+        lessonPlan.makeFlashcards(vocab)
+    }
+    
+    func createQuizQuestions(_ questions: [Language.QuizItem]) {
+        lessonPlan.makeQuiz(questions)
     }
     
     func flip(_ flashCard: Language.Term) {
@@ -60,6 +91,11 @@ import SwiftUI
         }
     }
     
+    func nextQuizQuestion() {
+        lessonPlan.nextQuizQuestion()
+    }
     
-    // MARK: - Private helpers
+    func pickQuizAnswer(_ answer: Language.QuizItem) -> Int {
+        lessonPlan.pickQuizAnswer(answer)
+    }
 }
